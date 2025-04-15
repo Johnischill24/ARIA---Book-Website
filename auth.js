@@ -1,4 +1,4 @@
-// Import Firebase modules (add at top of auth.js)
+// Import Firebase modules
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
 import { 
   getAuth, 
@@ -9,7 +9,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
 import firebaseConfig from './firebaseConfig.js';
 
-// Initialize Firebase (remove the duplicate initialization)
+// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
@@ -65,5 +65,5 @@ export function setAuthListeners(onLogin, onLogout) {
   });
 }
 
-// Export everything
-export { auth, register, login, logout, setAuthListeners };
+// Export auth object
+export { auth };

@@ -653,7 +653,7 @@
                         </div>
                         <div class = "input-box">
                             <span class ="icon"></span>
-                            <input type ="password" id = "passowrd" required>
+                            <input type ="password" id = "passoword" required>
                             <label>Password</label>
                         </div>
                         <div class = "remember-forgot">
@@ -701,16 +701,17 @@
 
     <!--JAVASCRIPT-->
 
+
     <script type="module">
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   import { register, login, logout, setAuthListeners, auth } from './auth.js';
 
 // Hook Login Form
 document.querySelector('#loginform').addEventListener('submit', function(e) {
   e.preventDefault();
   const email = document.getElementById('loginInput').value;
-  const password = document.getElementById('passowrd').value; // Watch spelling here
+  const password = document.getElementById('passoword').value; 
   login(email, password);
 });
 
