@@ -700,9 +700,11 @@
     </main>
 
     <!--JAVASCRIPT-->
-    <script>
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-import { register, login, logout, setAuthListeners, auth } from './auth.js';
+
+    <script type="module">
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  import { register, login, logout, setAuthListeners, auth } from './auth.js';
 
 // Hook Login Form
 document.querySelector('#loginform').addEventListener('submit', function(e) {
