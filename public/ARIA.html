@@ -701,9 +701,45 @@
     </main>
 
     <!--JAVASCRIPT-->
-    <script>
+    
+    <script type="module">
+    ///////////////////////////////////////////////////////for the firebase
+    import { signIn, signOut, auth, onAuthStateChanged } from './auth.js';
+   
+
+    const loginBtn = document.querySelector('#loginBtn');
+    const logoutBtn = document.querySelector('#logoutBtn');
+    const userDisplay = document.querySelector('#user');
+
+    function setLoggedInUI(user) {
+        M.toast({ html: `Logged in as ${user.email || 'Anonymous'}` });
+        userDisplay.innerHTML = `Signed in as ${user.email || 'Anonymous'}`;
+        loginBtn.style.display = 'none';
+        logoutBtn.style.display = 'inline-block';
+    }
+
+    function setLoggedOutUI() {
+        M.toast({ html: 'Logged Out!' });
+        userDisplay.innerHTML = '';
+        loginBtn.style.display = 'inline-block';
+        logoutBtn.style.display = 'none';
+    }
+
+    // Attach event listeners
+    loginBtn.addEventListener('click', signIn);
+    logoutBtn.addEventListener('click', signOut);
+
+    // Listen for authentication state changes
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+          setLoggedInUI(user);
+        } else {
+          setLoggedOutUI();
+        }
+    });
 
 
+//////////////////////////////////////////////////////////////////////////////////////////// for firebase
     function showPage(pageId) {
         document.querySelectorAll('.page').forEach(page => {
             page.style.display = 'none';
