@@ -639,7 +639,7 @@
             <div id = "library-books"></div>
         </div>
         </section>
-        
+        <!-- Login Section -->
         <section id = "login" class = "page">
             <div class = "wrapper">
                 <div class = "form-box login">
@@ -672,6 +672,7 @@
         <section id="register" class="page" style="display: none;">
             <div class="wrapper">
                 <div class="form-box register">
+                    <!--REGISTRATION-->
                     <h2>REGISTER</h2>
                     <form action="#">
                         <div class="input-box">
@@ -700,50 +701,8 @@
     </main>
 
     <!--JAVASCRIPT-->
+    <script>
 
-
-    <script type="module">
-
-//////////////////////////////////////////////////////////////////////////////////////////////my firebase implement
-  import { register, login, logout, setAuthListeners, auth } from './auth.js';
-
-// Hook Login Form
-document.querySelector('#loginform').addEventListener('submit', function(e) {
-  e.preventDefault();
-  const email = document.getElementById('loginInput').value;
-  const password = document.getElementById('passoword').value; 
-  login(email, password);
-});
-
-// Hook Register Form
-document.querySelector('#register form').addEventListener('submit', function(e) {
-  e.preventDefault();
-  const email = this.querySelector('input[type="email"]').value;
-  const password = this.querySelector('input[type="password"]').value;
-  register(email, password);
-});
-
-// Hook Logout button if you have one
-document.getElementById('logoutBtn')?.addEventListener('click', logout);
-
-// Auto-Update UI when login state changes
-setAuthListeners(
-  (user) => {
-    console.log(`Logged in as: ${user.email}`);
-    // Example: Show logged-in user's email
-    document.querySelectorAll('.navbar .loginUser').forEach(el => el.textContent = user.email);
-    document.querySelector('#loginBtn')?.classList.add('hidden');
-    document.querySelector('#logoutBtn')?.classList.remove('hidden');
-  },
-  () => {
-    console.log('No user logged in');
-    document.querySelectorAll('.navbar .loginUser').forEach(el => el.textContent = '');
-    document.querySelector('#loginBtn')?.classList.remove('hidden');
-    document.querySelector('#logoutBtn')?.classList.add('hidden');
-  }
-);
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     function showPage(pageId) {
         document.querySelectorAll('.page').forEach(page => {
