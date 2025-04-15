@@ -1,32 +1,44 @@
-// Import Firebase modules
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.x.x/firebase-app.js";
-import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.x.x/firebase-auth.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-app.js";
+import { 
+  getAuth, 
+  signOut, 
+  signInAnonymously, 
+  setPersistence, 
+  browserLocalPersistence, 
+  onAuthStateChanged 
+} from "https://www.gstatic.com/firebasejs/10.10.0/firebase-auth.js";
+import firebaseConfig from "./firebaseConfig.js";
 
-// Your Firebase configuration
-const firebaseConfig = {
-  apiKey: "AIzaSyCIP2XEJ7Yu4bVvqO_D1JlsJGNAytTnkvM",
-  authDomain: "aria-51e5e.firebaseapp.com",
-  projectId: "aria-51e5e",
-  storageBucket: "aria-51e5e.firebasestorage.app",
-  messagingSenderId: "603730679149",
-  appId: "1:603730679149:web:c3d5266bfc4c2a7de8b664",
-  measurementId: "G-WP5V2QDYZQ"
-};
 
-// Initialize Firebase
 const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
 
-function signIn() {
-  const email = document.getElementById("email").value;
-  const password = document.getElementById("password").value;
+const auth = getAuth();
 
-  signInWithEmailAndPassword(auth, email, password)
-    .then((userCredential) => {
-      const user = userCredential.user;
-      document.getElementById("status").innerText = `Welcome, ${user.email}!`;
-    })
-    .catch((error) => {
-      document.getElementById("status").innerText = `Error: ${error.message}`;
-    });
+function setAuthListeners(onLogin, onLogout){
+  onAuthStateChanged(auth, user => {
+    if (user) {
+      onLogin();
+    } else {
+      onLogout();
+    }
+  });
 }
+
+async function signIn(){
+  try{
+    await setPersistence(auth, browserLocalPersistence);
+    const user = await signInAnonymously(auth);
+  }catch(e){
+    console.error(e);
+  }
+}
+
+async function logout() {
+  try {
+    await signOut(auth);
+  } catch (error) {
+    console.error('Error signing out', error);
+  }
+}
+
+export {auth, setAuthListeners, signIn, logout};
