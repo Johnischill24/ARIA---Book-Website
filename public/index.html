@@ -348,6 +348,9 @@
             box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
             background: rgba(255, 255, 255, 0.15);
         }
+    
+    /*For the MY Library image*/
+ 
 
         .book-cover {
             width: 150px;
@@ -590,6 +593,23 @@
     background-color: rgba(255, 0, 0, 0.9);
    }
 
+   
+.comments-btn {
+    margin-top: 10px;
+    padding: 6px 12px;
+    background-color: rgba(60, 27, 1, 1);
+    color: rgba(255, 184, 0, 1);
+    border: none;
+    border-radius: 15px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.comments-btn:hover {
+    background-color: rgba(43, 0, 1, 1);
+}
+
+
     </style>
 </head>
 <body>
@@ -601,7 +621,6 @@
             <div class="navbar-buttons">
                 <button onclick="showPage('browse')"><a href="#browse">Browse</a></button>
                 <button onclick ="showPage('library')"><a href="#library">My Library</a></button>
-                <button><a href="#about">About</a></button>
                 <button><a href="#login">Login</a></button>
             </div>
         </div>
@@ -702,73 +721,7 @@
 
     <!--JAVASCRIPT-->
     
-    <script type="module">
-     
-      import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
-      import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-analytics.js";
-      import firebaseConfig from "./firebaseConfig.js";
-
-
-      
-      import { createUserWithEmailAndPassword } from "firebase/auth";
-
-createUserWithEmailAndPassword(auth, email, password)
-  .then((userCredential) => {
-    // Signed in
-    const user = userCredential.user;
-    console.log("User created:", user);
-  })
-  .catch((error) => {
-    const errorCode = error.code;
-    const errorMessage = error.message;
-    console.error("Error creating user:", errorCode, errorMessage);
-  });
-
-      
-
-  import { signInWithEmailAndPassword } from "firebase/auth";
-
-signInWithEmailAndPassword(auth, email, password)
-  .then((userCredential) => {
-    // Signed in
-    const user = userCredential.user;
-    console.log("User signed in:", user);
-  })
-  .catch((error) => {
-    const errorCode = error.code;
-    const errorMessage = error.message;
-    console.error("Error signing in:", errorCode, errorMessage);
-  });
-
- 
-
-import { signOut } from "firebase/auth";
-
-signOut(auth)
-  .then(() => {
-    // Sign-out successful.
-    console.log("User signed out");
-  })
-  .catch((error) => {
-    console.error("Error signing out:", error);
-  });
-
-  import { onAuthStateChanged } from "firebase/auth";
-
-onAuthStateChanged(auth, (user) => {
-  if (user) {
-    // User is signed in, see docs for a list of available properties
-    // https://firebase.google.com/docs/reference/js/auth.user
-    const uid = user.uid;
-    console.log("User is signed in with UID:", uid);
-  } else {
-    // User is signed out
-    console.log("User is signed out");
-  }
-});
-
-
-
+    <script>
     
 
 
@@ -789,6 +742,10 @@ onAuthStateChanged(auth, (user) => {
 
     
 //////////////////////////////////////////////////////////////////////////////////////////// for firebase
+    // Global variable for comments
+    let currentBookKey = null;
+
+    // Page navigation functions
     function showPage(pageId) {
         document.querySelectorAll('.page').forEach(page => {
             page.style.display = 'none';
@@ -806,12 +763,11 @@ onAuthStateChanged(auth, (user) => {
         }
     }
 
-    // Function to show book details modal - moved outside to make it globally accessible
+    // Book details modal functions
     async function showBookDetails(bookKey, titleEncoded, coverUrl, authorEncoded, year) {
         const title = decodeURIComponent(titleEncoded);
         const author = decodeURIComponent(authorEncoded);
         
-        // Set the basic book info in the modal
         document.getElementById('modalBookTitle').textContent = title;
         document.getElementById('modalBookAuthor').textContent = `Author: ${author}`;
         document.getElementById('modalBookYear').textContent = `Published: ${year}`;
@@ -819,23 +775,17 @@ onAuthStateChanged(auth, (user) => {
         document.getElementById('modalBookDescription').textContent = 'Loading description...';
         document.getElementById('modalBookDescription').className = 'loading-description';
         
-        // Show the modal
         document.getElementById('bookDetailsModal').style.display = 'flex';
         
-        // Fetch book description if we have a key
         if (bookKey) {
             try {
                 const response = await fetch(`https://openlibrary.org${bookKey}.json`);
                 const data = await response.json();
                 
                 let description = 'No description available.';
-                
                 if (data.description) {
-                    if (typeof data.description === 'object' && data.description.value) {
-                        description = data.description.value;
-                    } else if (typeof data.description === 'string') {
-                        description = data.description;
-                    }
+                    description = typeof data.description === 'object' ? 
+                        data.description.value : data.description;
                 }
                 
                 document.getElementById('modalBookDescription').textContent = description;
@@ -849,11 +799,227 @@ onAuthStateChanged(auth, (user) => {
         }
     }
 
-    // Function to close the modal - moved outside to make it globally accessible
     function closeModal() {
         document.getElementById('bookDetailsModal').style.display = 'none';
     }
 
+    // Library management functions
+    function toggleLibrary(bookKey, titleEncoded, coverUrl, authorEncoded, year) {
+        try {
+            const title = decodeURIComponent(titleEncoded);
+            const author = decodeURIComponent(authorEncoded);
+            
+            let library = JSON.parse(localStorage.getItem('myLibrary')) || [];
+            const existingIndex = library.findIndex(book => book.key === bookKey);
+            
+            if (existingIndex >= 0) {
+                library.splice(existingIndex, 1);
+                localStorage.setItem('myLibrary', JSON.stringify(library));
+                
+                document.querySelectorAll(`.save-btn[data-key="${bookKey}"]`).forEach(btn => {
+                    btn.textContent = 'Save to Library';
+                    btn.classList.remove('saved');
+                });
+                
+                if (document.getElementById('library').style.display === 'flex') {
+                    displayLibraryBooks();
+                }
+                
+                alert('Book removed from your library!');
+            } else {
+                const book = {
+                    key: bookKey,
+                    title: title,
+                    coverUrl: coverUrl,
+                    author: author,
+                    year: year
+                };
+                
+                library.push(book);
+                localStorage.setItem('myLibrary', JSON.stringify(library));
+                
+                document.querySelectorAll(`.save-btn[data-key="${bookKey}"]`).forEach(btn => {
+                    btn.textContent = 'Saved!';
+                    btn.classList.add('saved');
+                });
+                
+                if (document.getElementById('library').style.display === 'flex') {
+                    displayLibraryBooks();
+                }
+                
+                alert('Book saved to your library!');
+            }
+        } catch (error) {
+            console.error('Error toggling library:', error);
+            alert('An error occurred. Please try again.');
+        }
+    }
+
+    function displayLibraryBooks() {
+        const libraryBooks = document.getElementById('library-books');
+        const library = JSON.parse(localStorage.getItem('myLibrary')) || [];
+        
+        if (library.length === 0) {
+            libraryBooks.innerHTML = '<p class="text">Your library is empty. Save some books to see them here!</p>';
+            return;
+        }
+        
+        let html = '<div class="books-grid">';
+        library.forEach(book => {
+            html += `
+            <div class="book-card">
+                <div class="book-cover">
+                    <img src="${book.coverUrl}" alt="${book.title}">
+                </div>
+                <div class="book-info">
+                    <h3 class="book-title">${book.title || 'Unknown Title'}</h3>
+                    <p class="book-author">Author: ${book.author || 'Unknown'}</p>
+                    <p class="book-year">Release date: ${book.year || 'N/A'}</p>
+                    <div class="book-buttons">
+                        <button class="details-btn" onclick="showBookDetails('${book.key}', '${encodeURIComponent(book.title)}', '${book.coverUrl}', '${encodeURIComponent(book.author)}', '${book.year}')">Details</button>
+                        <button class="remove-btn" onclick="toggleLibrary('${book.key}', '${encodeURIComponent(book.title)}', '${book.coverUrl}', '${encodeURIComponent(book.author)}', '${book.year}')">Remove</button>
+                    </div>
+                </div>
+            </div>
+            `;
+        });
+        html += '</div>';
+        libraryBooks.innerHTML = html;
+    }
+
+    // Comments functions
+    function showCommentsModal(bookKey) {
+        currentBookKey = bookKey;
+        document.getElementById('commentsSection').style.display = 'flex';
+        loadComments(bookKey);
+        setTimeout(() => {
+            document.getElementById('newComment').focus();
+        }, 100);
+    }
+
+    function closeComments() {
+        document.getElementById('commentsSection').style.display = 'none';
+    }
+
+    function addComment() {
+        const newCommentText = document.getElementById('newComment').value.trim();
+        if (newCommentText && currentBookKey) {
+            const commentsRef = database.ref('comments/' + currentBookKey);
+            const newCommentRef = commentsRef.push();
+            newCommentRef.set({
+                text: newCommentText,
+                timestamp: Date.now()
+            });
+            document.getElementById('newComment').value = '';
+            loadComments(currentBookKey);
+        }
+    }
+
+    function loadComments(bookKey) {
+        const commentsRef = database.ref('comments/' + bookKey);
+        commentsRef.on('value', function(snapshot) {
+            const commentsData = snapshot.val();
+            const commentsList = document.getElementById('commentsList');
+            commentsList.innerHTML = '';
+
+            if (commentsData) {
+                Object.keys(commentsData).forEach(commentId => {
+                    const comment = commentsData[commentId];
+                    const commentElement = document.createElement('div');
+                    commentElement.classList.add('comment');
+                    commentElement.textContent = comment.text;
+                    commentsList.appendChild(commentElement);
+                });
+            } else {
+                commentsList.innerHTML = '<p>No comments yet.</p>';
+            }
+        });
+    }
+
+    // Book gallery functions
+    function createGallery(records) {
+        const gallery = document.querySelector('#gallery');
+        let html = '<div class="books-grid">';
+        const library = JSON.parse(localStorage.getItem('myLibrary')) || [];
+        
+        for (let rec of records) {
+            const thumbnail = rec.cover_i
+                ? `https://covers.openlibrary.org/b/id/${rec.cover_i}-M.jpg`
+                : 'https://via.placeholder.com/150x200?text=No+Cover';
+            
+            const bookKey = rec.key.replace(/'/g, "\\'");
+            const isSaved = library.some(book => book.key === rec.key);
+            
+            html += `
+            <div class="book-card">
+                <div class="book-cover">
+                    <img src="${thumbnail}" alt="${rec.title}">
+                </div>
+                <div class="book-info">
+                    <h3 class="book-title">${rec.title || 'Unknown Title'}</h3>
+                    <p class="book-author">Author: ${rec.author_name ? rec.author_name.join(', ') : 'Unknown'}</p>
+                    <p class="book-year">Release date: ${rec.first_publish_year || 'N/A'}</p>
+                    <div class="book-buttons">
+                        <button class="details-btn" onclick="showBookDetails('${bookKey}', '${encodeURIComponent(rec.title)}', '${thumbnail}', '${encodeURIComponent(rec.author_name ? rec.author_name.join(', ') : 'Unknown')}', '${rec.first_publish_year || 'N/A'}')">Details</button>
+                        <button class="comments-btn" onclick="showCommentsModal('${bookKey}');">Comments</button>
+                        <button class="save-btn ${isSaved ? 'saved' : ''}" 
+                                data-key="${bookKey}"
+                                onclick="toggleLibrary('${bookKey}', '${encodeURIComponent(rec.title)}', '${thumbnail}', '${encodeURIComponent(rec.author_name ? rec.author_name.join(', ') : 'Unknown')}', '${rec.first_publish_year || 'N/A'}')">
+                            ${isSaved ? 'Saved!' : 'Save to Library'}
+                        </button>
+                    </div>
+                </div>
+            </div>
+            `;
+        }
+        html += '</div>';
+        gallery.innerHTML = html;
+    }
+
+    function checkSavedBooks() {
+        const library = JSON.parse(localStorage.getItem('myLibrary')) || [];
+        const buttons = document.querySelectorAll('.save-btn');
+        
+        buttons.forEach(button => {
+            const bookKey = button.getAttribute('data-key');
+            if (bookKey) {
+                const isSaved = library.some(book => book.key === bookKey);
+                if (isSaved) {
+                    button.textContent = 'Saved!';
+                    button.classList.add('saved');
+                }
+            }
+        });
+    }
+
+    async function getData(query) {
+        try {
+            const gallery = document.querySelector('#gallery');
+            gallery.innerHTML = '<div class="loading">Loading books, this might take a while...</div>';
+            
+            const response = await fetch(`https://openlibrary.org/search.json?q=${encodeURIComponent(query)}&limit=24`);
+            const data = await response.json();
+            
+            if (data.docs && data.docs.length > 0) {
+                createGallery(data.docs);
+                checkSavedBooks();
+            } else {
+                gallery.innerHTML = '<div class="loading">No books found. Try a different search.</div>';
+            }
+        } catch (error) {
+            console.error('Error fetching data:', error);
+            document.querySelector('#gallery').innerHTML = '<div class="loading">Error loading books. Please try again.</div>';
+        }
+    }
+
+    async function search() {
+        const query = document.getElementById('searchInput').value.trim();
+        if (query.length > 2) {
+            getData(query);
+        }
+    }
+
+    // Event listeners
     document.addEventListener('DOMContentLoaded', function() {
         showPage('home');
         
@@ -875,199 +1041,24 @@ onAuthStateChanged(auth, (user) => {
             showPage('login');
         });
 
-        function createGallery(records) {
-    const gallery = document.querySelector('#gallery');
-    let html = '<div class="books-grid">';
-    const library = JSON.parse(localStorage.getItem('myLibrary')) || [];
-    
-    for (let rec of records) {
-        const thumbnail = rec.cover_i
-            ? `https://covers.openlibrary.org/b/id/${rec.cover_i}-M.jpg`
-            : 'https://via.placeholder.com/150x200?text=No+Cover';
-        
-        // Properly escape the book key
-        const bookKey = rec.key.replace(/'/g, "\\'");
-        const isSaved = library.some(book => book.key === rec.key);
-        
-        html += `
-        <div class="book-card">
-            <div class="book-cover">
-                <img src="${thumbnail}" alt="${rec.title}">
-            </div>
-            <div class="book-info">
-                <h3 class="book-title">${rec.title || 'Unknown Title'}</h3>
-                <p class="book-author">Author: ${rec.author_name ? rec.author_name.join(', ') : 'Unknown'}</p>
-                <p class="book-year">Release date: ${rec.first_publish_year || 'N/A'}</p>
-                <div class="book-buttons">
-                    <button class="details-btn" onclick="showBookDetails('${bookKey}', '${encodeURIComponent(rec.title)}', '${thumbnail}', '${encodeURIComponent(rec.author_name ? rec.author_name.join(', ') : 'Unknown')}', '${rec.first_publish_year || 'N/A'}')">Details</button>
-                    <button class="save-btn ${isSaved ? 'saved' : ''}" 
-                            data-key="${bookKey}"
-                            onclick="toggleLibrary('${bookKey}', '${encodeURIComponent(rec.title)}', '${thumbnail}', '${encodeURIComponent(rec.author_name ? rec.author_name.join(', ') : 'Unknown')}', '${rec.first_publish_year || 'N/A'}')">
-                        ${isSaved ? 'Saved!' : 'Save to Library'}
-                    </button>
-                </div>
-            </div>
-        </div>
-        `;
-    }
-    html += '</div>';
-    gallery.innerHTML = html;
-}
-
-        async function getData(query) {
-            try {
-                const gallery = document.querySelector('#gallery');
-                gallery.innerHTML = '<div class="loading">Loading books, this might take a while...</div>';
-                
-                const response = await fetch(`https://openlibrary.org/search.json?q=${encodeURIComponent(query)}&limit=24`);
-                const data = await response.json();
-                
-                if (data.docs && data.docs.length > 0) {
-                    createGallery(data.docs);
-                    checkSavedBooks();
-                } else {
-                    gallery.innerHTML = '<div class="loading">No books found. Try a different search.</div>';
-                }
-            } catch (error) {
-                console.error('Error fetching data:', error);
-                document.querySelector('#gallery').innerHTML = '<div class="loading">Error loading books. Please try again.</div>';
-            }
-        }
-
-        function checkSavedBooks() {
-    const library = JSON.parse(localStorage.getItem('myLibrary')) || [];
-    const buttons = document.querySelectorAll('.save-btn');
-    
-    buttons.forEach(button => {
-        const bookKey = button.getAttribute('data-key');
-        if (bookKey) {
-            const isSaved = library.some(book => book.key === bookKey);
-            
-            if (isSaved) {
-                button.textContent = 'Saved!';
-                button.classList.add('saved');
-            }
-        }
-    });
-}
-        
-        async function search() {
-            const query = document.getElementById('searchInput').value.trim();
-            if (query.length > 2) {
-                getData(query);
-            }
-        }
-
         document.getElementById('searchInput').addEventListener('keyup', function(event) {
             if (event.key === 'Enter') {
                 search();
             }
         });
 
-        // Close modal when clicking outside of it
         window.addEventListener('click', function(event) {
-            const modal = document.getElementById('bookDetailsModal');
-            if (event.target === modal) {
+            if (event.target === document.getElementById('bookDetailsModal')) {
                 closeModal();
+            }
+            if (event.target === document.getElementById('commentsSection')) {
+                closeComments();
             }
         });
 
-        function toggleLibrary(bookKey, titleEncoded, coverUrl, authorEncoded, year) {
-    try {
-        const title = decodeURIComponent(titleEncoded);
-        const author = decodeURIComponent(authorEncoded);
-        
-        let library = JSON.parse(localStorage.getItem('myLibrary')) || [];
-        const existingIndex = library.findIndex(book => book.key === bookKey);
-        
-        if (existingIndex >= 0) {
-            // Remove book
-            library.splice(existingIndex, 1);
-            localStorage.setItem('myLibrary', JSON.stringify(library));
-            
-            // Update all matching buttons
-            document.querySelectorAll(`.save-btn[data-key="${bookKey}"]`).forEach(btn => {
-                btn.textContent = 'Save to Library';
-                btn.classList.remove('saved');
-            });
-            
-            // Refresh library view if open
-            if (document.getElementById('library').style.display === 'flex') {
-                displayLibraryBooks();
-            }
-            
-            alert('Book removed from your library!');
-        } else {
-            // Add book
-            const book = {
-                key: bookKey,
-                title: title,
-                coverUrl: coverUrl,
-                author: author,
-                year: year
-            };
-            
-            library.push(book);
-            localStorage.setItem('myLibrary', JSON.stringify(library));
-            
-            // Update all matching buttons
-            document.querySelectorAll(`.save-btn[data-key="${bookKey}"]`).forEach(btn => {
-                btn.textContent = 'Saved!';
-                btn.classList.add('saved');
-            });
-            
-            // Refresh library view if open
-            if (document.getElementById('library').style.display === 'flex') {
-                displayLibraryBooks();
-            }
-            
-            alert('Book saved to your library!');
-        }
-    } catch (error) {
-        console.error('Error toggling library:', error);
-        alert('An error occurred. Please try again.');
-    }
-}
-
-
-function displayLibraryBooks() {
-    const libraryBooks = document.getElementById('library-books');
-    const library = JSON.parse(localStorage.getItem('myLibrary')) || [];
-    
-    if (library.length === 0) {
-        libraryBooks.innerHTML = '<p class="text">Your library is empty. Save some books to see them here!</p>';
-        return;
-    }
-    
-    let html = '<div class="books-grid">';
-    library.forEach(book => {
-        html += `
-        <div class="book-card">
-            <div class="book-cover">
-                <img src="${book.coverUrl}" alt="${book.title}">
-            </div>
-            <div class="book-info">
-                <h3 class="book-title">${book.title || 'Unknown Title'}</h3>
-                <p class="book-author">Author: ${book.author || 'Unknown'}</p>
-                <p class="book-year">Release date: ${book.year || 'N/A'}</p>
-                <div class="book-buttons">
-                    <button class="details-btn" onclick="showBookDetails('${book.key}', '${encodeURIComponent(book.title)}', '${book.coverUrl}', '${encodeURIComponent(book.author)}', '${book.year}')">Details</button>
-                    <button class="remove-btn" onclick="toggleLibrary('${book.key}', '${encodeURIComponent(book.title)}', '${book.coverUrl}', '${encodeURIComponent(book.author)}', '${book.year}')">Remove</button>
-                </div>
-            </div>
-        </div>
-        `;
-    });
-    html += '</div>';
-    libraryBooks.innerHTML = html;
-}
-
-
-
-
         getData("popular books");
     });
-    </script>
+</script>
 
     <!-- Book Details Modal -->
     <div id="bookDetailsModal" class="modal">
@@ -1094,9 +1085,21 @@ function displayLibraryBooks() {
             </div>
         </div>
     </div>
-  </script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
-  <script> M.AutoInit(); </script>
-</body>
-</html>
-  
+    <div id = "commentsSection" class = "modal">
+        <div class = "modal-content">
+            <div class = "modal-header">
+                <h1 class = "modal-title">Tell us what you think of the book</h1>
+                <button class = "close-modal" onclick = "closeComments()">&times;</button>
+                </div>
+                <div class = "modal-body">
+                    <div id = "commentsList" class = "comments-list">
+
+                    </div>
+                    <div class = "comment-input">
+                        <textarea id = "newComment" placeholder = "Write your comment here...." rows ="3" aria-label = "Comment input"></textarea>
+                        <button onclick = "addComment()" class = "comment-submit-btn">Post Comment</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    <
