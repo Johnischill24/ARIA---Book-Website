@@ -640,6 +640,15 @@
     background-color: rgba(43, 0, 1, 1);
 }
 
+.navbar-buttons {
+    display: flex;
+    gap: 10px;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+}
+
+
     </style>
 <!--MAIN OF THE PROGRAM-->
 </head>
@@ -653,6 +662,7 @@
                 <button onclick="showPage('browse')"><a href="#browse">Browse</a></button>
                 <button onclick ="showPage('library')"><a href="#library">My Library</a></button>
                 <button><a href="#login">Login</a></button>
+                <button><a href="#logout">Logout</a></button>
             </div>
         </div>
     </header>
@@ -751,15 +761,40 @@
     </main>
 
     <!--JAVASCRIPT-->
+    <script>
     
 
-<script >
-    
 
-    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 //////////////////////////////////////////////////////////////////////////////////////////// for firebase
-    // Global variable for comments
-    let currentBookKey = null;
+    
+
+
+
+
+
+
+
+
+
+
 
     // Page navigation functions
     function showPage(pageId) {
@@ -918,39 +953,51 @@
     }
 
     function addComment() {
-        const newCommentText = document.getElementById('newComment').value.trim();
-        if (newCommentText && currentBookKey) {
-            const commentsRef = database.ref('comments/' + currentBookKey);
-            const newCommentRef = commentsRef.push();
-            newCommentRef.set({
-                text: newCommentText,
-                timestamp: Date.now()
+    const newCommentText = document.getElementById('newComment').value.trim();
+    if (newCommentText && currentBookKey) {
+        const commentsRef = ref(database, `comments/${currentBookKey}`); // Use Firebase Realtime Database reference
+        const newCommentRef = push(commentsRef); // Generate a unique key for the comment
+        const commentData = {
+            text: newCommentText,
+            timestamp: Date.now(),
+        };
+
+        set(newCommentRef, commentData)
+            .then(() => {
+                console.log("Comment saved:", commentData);
+                document.getElementById('newComment').value = ''; // Clear the input field
+                loadComments(currentBookKey); // Reload comments
+                alert("Comment posted successfully!");
+            })
+            .catch((error) => {
+                console.error("Error saving comment:", error);
+                alert("Failed to post comment. Please try again.");
             });
-            document.getElementById('newComment').value = '';
-            loadComments(currentBookKey);
+    } else {
+        alert("Please write a comment before posting.");
+    }
+}
+
+function loadComments(bookKey) {
+    const commentsRef = ref(database, `comments/${bookKey}`); // Use Firebase Realtime Database reference
+    onValue(commentsRef, (snapshot) => {
+        const commentsData = snapshot.val();
+        const commentsList = document.getElementById('commentsList');
+        commentsList.innerHTML = ''; // Clear existing comments
+
+        if (commentsData) {
+            Object.keys(commentsData).forEach((commentId) => {
+                const comment = commentsData[commentId];
+                const commentElement = document.createElement('div');
+                commentElement.classList.add('comment');
+                commentElement.textContent = `${comment.text} (Posted on ${new Date(comment.timestamp).toLocaleString()})`;
+                commentsList.appendChild(commentElement);
+            });
+        } else {
+            commentsList.innerHTML = '<p>No comments yet. Be the first to comment!</p>';
         }
-    }
-
-    function loadComments(bookKey) {
-        const commentsRef = database.ref('comments/' + bookKey);
-        commentsRef.on('value', function(snapshot) {
-            const commentsData = snapshot.val();
-            const commentsList = document.getElementById('commentsList');
-            commentsList.innerHTML = '';
-
-            if (commentsData) {
-                Object.keys(commentsData).forEach(commentId => {
-                    const comment = commentsData[commentId];
-                    const commentElement = document.createElement('div');
-                    commentElement.classList.add('comment');
-                    commentElement.textContent = comment.text;
-                    commentsList.appendChild(commentElement);
-                });
-            } else {
-                commentsList.innerHTML = '<p>No comments yet.</p>';
-            }
-        });
-    }
+    });
+}
 
     // Book gallery functions
     function createGallery(records) {
