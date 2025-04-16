@@ -13,7 +13,6 @@ import firebaseConfig from "./firebaseConfig.js";
 const app = initializeApp(firebaseConfig);
 
 const auth = getAuth();
-
 function setAuthListeners(onLogin, onLogout){
   onAuthStateChanged(auth, user => {
     if (user) {
