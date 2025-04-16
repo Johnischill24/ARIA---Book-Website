@@ -351,31 +351,32 @@
     
     /*For the MY Library image*/
    
+/* Full-page background for library section */
+#library {
+    background: url('Library forest.jpg') no-repeat center center fixed;
+    background-size: cover;
+}
+
+/* Content container styling */
 #library .gallery-container {
-    position: relative;
-    width: 100%;
-    height: 100vh; /* Full viewport height */
-    padding: 0; /* Remove padding to allow full coverage */
-}
-
-#library .gallery-header {
-    position: relative;
-    z-index: 1; /* Ensure text appears above the image */
-    background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent background for better text readability */
+    background-color: rgba(0, 0, 0, 0.6); /* Dark semi-transparent overlay */
+    min-height: 100vh;
     padding: 20px;
-    border-radius: 10px;
-    margin: 20px;
+    width: 100%;
 }
 
-#library .gallery-header img {
-    position: fixed; /* Fixed positioning for full coverage */
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    object-fit: cover;
-    z-index: -1; /* Ensure image is behind the text */
+/* Header text styling */
+#library .gallery-header {
+    padding: 20px;
+    color: white;
+    text-align: center;
 }
+
+/* Book cards container */
+#library-books {
+    padding: 20px;
+}
+
 
         .book-cover {
             width: 150px;
@@ -679,7 +680,6 @@
                 <div class="gallery-header">
                     <h1>My library</h1>
                     <p>Books you have saved</p>
-                    <img src="Library forest.jpg" alt="Library" class="library-bg-image">
                 </div>
                 <div id="library-books"></div>
             </div>
