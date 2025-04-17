@@ -217,9 +217,22 @@
          }
          .btn{
             width: 100%;
-            height: 45px;
+            height: 40px;
             background: rgba(1, 23, 5, 0.492);;
             border: none;
+            outline: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1em;
+            color: rgba(255, 184, 0, 1);
+            font-weight: 500;
+         }
+         .btn-1{
+            width: 100%;
+            height: 40px;
+            background: rgba(1, 23, 5, 0.492);;
+            border: none;
+            margin-top: 10px;
             outline: none;
             border-radius: 6px;
             cursor: pointer;
@@ -646,7 +659,6 @@
                 <button onclick="showPage('browse')"><a href="#browse">Browse</a></button>
                 <button onclick ="showPage('library')"><a href="#library">My Library</a></button>
                 <button><a href="#login">Login</a></button>
-                <button><a href="#logout">Logout</a></button>
             </div>
         </div>
     </header>
@@ -705,6 +717,7 @@
                             <a href="#">Forgot Password?</a>
                         </div>
                         <button type ="submit" class="btn">Login</button>
+                        <button type = "submit" class = "btn-1">Logout</button>
                     </form>
                     </form>
                 </div>
@@ -1076,6 +1089,14 @@ function loadComments(bookKey) {
                     alert('Invalid username or password');
                 }
             });
+
+            document.getElementById('btn-1').addEventListener('click', function () {
+    isLoggedIn = false;
+    localStorage.removeItem('isLoggedIn');
+
+    alert('You have been logged out.');
+    showPage('loginPage');
+});
             
         document.getElementById('searchInput').addEventListener('keyup', function(event) {
             if (event.key === 'Enter') {
