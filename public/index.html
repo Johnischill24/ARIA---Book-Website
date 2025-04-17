@@ -749,6 +749,8 @@
 
 
     // Page navigation functions
+    let isLoggedIn = false;
+
     function showPage(pageId) {
         document.querySelectorAll('.page').forEach(page => {
             page.style.display = 'none';
@@ -806,8 +808,15 @@
         document.getElementById('bookDetailsModal').style.display = 'none';
     }
 
+    
+
     // Library management functions
     function toggleLibrary(bookKey, titleEncoded, coverUrl, authorEncoded, year) {
+        if(!isLoggedIn) {
+    alert("Please log in to save books");
+    return;
+}
+        
         try {
             const title = decodeURIComponent(titleEncoded);
             const author = decodeURIComponent(authorEncoded);
@@ -905,6 +914,11 @@
     }
 
     function addComment() {
+        if(!isLoggedIn)
+    {
+        alert("Please log in to post a comment");
+        return;
+    }
     const newCommentText = document.getElementById('newComment').value.trim();
     if (newCommentText && currentBookKey) {
         const commentsRef = ref(database, `comments/${currentBookKey}`); // Use Firebase Realtime Database reference
@@ -1046,16 +1060,29 @@ function loadComments(bookKey) {
             });
         });
         
-        document.querySelector('.login-link')?.addEventListener('click', function(event) {
-            event.preventDefault();
-            showPage('login');
-        });
+            
+        document.addEventListener('DOMContentLoaded', function() {  
+            document.getElementById('loginform').addEventListener('submit', function (event) {
+                event.preventDefault();
 
+                const username = document.getElementById('loginInput').value.trim();
+                const password = document.getElementById('password').value;
+
+                if(username === 'bob' && password === 'bobpass') {
+                    isLoggedIn = true;
+                    alert('Congratulations, you have logged in freely');
+                    showPage('browse');
+                } else {
+                    alert('Invalid username or password');
+                }
+            });
+            
         document.getElementById('searchInput').addEventListener('keyup', function(event) {
             if (event.key === 'Enter') {
                 search();
             }
         });
+    });
 
         window.addEventListener('click', function(event) {
             if (event.target === document.getElementById('bookDetailsModal')) {
