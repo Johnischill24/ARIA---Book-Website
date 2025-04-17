@@ -227,22 +227,6 @@
             color: rgba(255, 184, 0, 1);
             font-weight: 500;
          }
-         .login-register {
-            font-size: .9em;
-            color: rgba(43, 0, 1, 1);
-            text-align: center;
-            font-weight: 500;
-            margin: 25px 0 10px;
-         }
-
-         .login-register p a{
-            color: rgba(43, 0, 1, 1);
-            text-decoration: none;
-            font-weight: 600;
-         }
-         .login-register p a:hover{
-            text-decoration: underline;
-         }
          .container {
             max-width: 1200px;
             margin: 0 auto;
@@ -713,7 +697,7 @@
                         </div>
                         <div class = "input-box">
                             <span class ="icon"></span>
-                            <input type ="password" id = "passoword" required>
+                            <input type ="password" id = "password" required>
                             <label>Password</label>
                         </div>
                         <div class = "remember-forgot">
@@ -721,39 +705,7 @@
                             <a href="#">Forgot Password?</a>
                         </div>
                         <button type ="submit" class="btn">Login</button>
-                        <div class = "login-register">
-                            <p>Don't have an account?<a href="#" class ="register-link">Register</a></p>
-                        </div>
                     </form>
-                    </form>
-                </div>
-            </div>
-        </section>
-        <section id="register" class="page" style="display: none;">
-            <div class="wrapper">
-                <div class="form-box register">
-                    <!--REGISTRATION-->
-                    <h2>REGISTER</h2>
-                    <form action="#">
-                        <div class="input-box">
-                            <span class="icon"></span>
-                            <input type="text" id = "username" required>
-                            <label>Username</label>
-                        </div>
-                        <div class="input-box">
-                            <span class="icon"></span>
-                            <input type="email" required>
-                            <label>Email</label>
-                        </div>
-                        <div class="input-box">
-                            <span class="icon"></span>
-                            <input type="password" required>
-                            <label>Password</label>
-                        </div>
-                        <button type="submit" class="btn">Register</button>
-                        <div class="login-register">
-                            <p>Already have an account? <a href="#" class="login-link">Login</a></p>
-                        </div>
                     </form>
                 </div>
             </div>
@@ -1092,11 +1044,6 @@ function loadComments(bookKey) {
                 const targetId = this.getAttribute('href').substring(1);
                 showPage(targetId);
             });
-        });
-        
-        document.querySelector('.register-link')?.addEventListener('click', function(event) {
-            event.preventDefault();
-            showPage('register');
         });
         
         document.querySelector('.login-link')?.addEventListener('click', function(event) {
